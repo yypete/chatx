@@ -1,30 +1,22 @@
 <template>
-  <div class="flex">
-    <div class="side-menu border-b-2 p-3">
+  <div class="flex flex-col md:flex-row h-screen">
+    <div
+      class="side-menu border-b-2 p-3 transition-all duration-500 md:w-1/4"
+      :class="{ '-translate-x-full': !isSideMenuVisible }"
+    >
       <!-- header -->
       <div class="flex justify-between h-14 items-center">
-        <span class="hide flex hover:bg-gray-200 hover:rounded-lg">
+        <span
+          class="hide flex hover:bg-gray-200 hover:rounded-lg"
+          @click="toggleSideMenu"
+        >
           <button class="h-10 rounded-lg px-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-              class="icon-xl-heavy"
-            ></svg>
+            <i class="fi fi-rr-book-arrow-right text-xl"></i>
           </button>
         </span>
         <span class="start flex hover:bg-gray-200 hover:rounded-lg">
           <button class="h-10 rounded-lg px-2" @click="generateNewIdAndReload">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              class="icon-xl-heavy"
-            ></svg>
+            <i class="fi fi-rr-edit text-xl"></i>
           </button>
         </span>
       </div>
@@ -40,57 +32,53 @@
           <a
             class="group flex h-10 items-center gap-2 rounded-lg bg-token-sidebar-surface-primary px-2 font-semibold juice:gap-2.5 juice:font-normal hover:bg-token-sidebar-surface-secondary"
           >
-            <div class="h-6 w-6 flex-shrink-0">
-              <div
-                class="relative flex h-full items-center justify-center rounded-full"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 41 41"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  role="img"
-                >
-                  <text x="-9999" y="-9999">ChatGPT</text>
-                </svg>
-              </div>
-            </div>
             <div
-              class="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm text-token-text-primary"
+              class="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm text-token-text-primary flex items-center"
             >
-              New Chat
-            </div>
-            <div class="flex gap-3">
-              <span class="flex items-center" data-state="closed">
-                <button class="invisible">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  ></svg>
-                </button>
-              </span>
+              <i class="fi fi-sr-robot px-2 text-xl translate-y-0.5"></i>
+              ChatGpt
             </div>
           </a>
         </div>
         <!-- mid-history -->
         <div
-          class="flex flex-col items-center cursor-pointer"
+          class="flex flex-col items-center cursor-pointer font-bold text-[14px]"
           v-for="history in chatHistories"
           :key="history.conversationId"
           @click="loadConversation(history.conversationId)"
         >
-          <div class="py-2">{{ history.firstMessageContent }}</div>
+          <div
+            class="py-2 w-full overflow-hidden text-ellipsis whitespace-nowrap flex justify-center hover:bg-gray-200 hover:rounded-lg text-[14px]"
+          >
+            {{ history.firstMessageContent }}
+          </div>
         </div>
       </div>
     </div>
-    <NewChat
-      :conversationId="currentConversationId"
-      :key="currentConversationId"
-    />
+    <div
+      class="fixed top-4 left-3 flex items-center text-gray-500"
+      v-show="!isSideMenuVisible"
+    >
+      <span
+        class="hide flex hover:bg-gray-200 hover:rounded-lg"
+        @click="toggleSideMenu"
+      >
+        <button class="h-10 rounded-lg px-2">
+          <i class="fi fi-rr-book-arrow-right text-xl"></i>
+        </button>
+      </span>
+      <span class="start flex hover:bg-gray-200 hover:rounded-lg">
+        <button class="h-10 rounded-lg px-2" @click="generateNewIdAndReload">
+          <i class="fi fi-rr-edit text-xl"></i>
+        </button>
+      </span>
+    </div>
+    <div class="chat-container flex-1 p-4">
+      <NewChat
+        :conversationId="currentConversationId"
+        :key="currentConversationId"
+      />
+    </div>
   </div>
 </template>
 
@@ -103,7 +91,6 @@ interface ConversationSummary {
   conversationId: string;
   firstMessageContent: string;
 }
-
 export default defineComponent({
   name: "ChatGpt",
   components: {
@@ -113,6 +100,7 @@ export default defineComponent({
     const chatHistories = ref<ConversationSummary[]>([]);
     const currentConversationId = ref<string>("123");
     const allConversationIds = ref<string[]>(["123", "abc", "xyz"]); // 初始对话ID
+    const isSideMenuVisible = ref(true); // 添加状态控制侧边菜单显示
 
     function generateNewIdAndReload() {
       // 获取新的聊天历史
@@ -159,6 +147,11 @@ export default defineComponent({
       currentConversationId.value = conversationId;
       console.log(conversationId);
     }
+
+    function toggleSideMenu() {
+      isSideMenuVisible.value = !isSideMenuVisible.value;
+    }
+
     onMounted(() => {
       allConversationIds.value.forEach((id) => {
         const chatHistory = getChatHistory(id);
@@ -175,15 +168,35 @@ export default defineComponent({
       currentConversationId,
       generateNewIdAndReload,
       loadConversation,
+      isSideMenuVisible, // 添加到返回对象中
+      toggleSideMenu, // 添加到返回对象中
     };
   },
 });
 </script>
 
 <style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .container {
+    flex-direction: row;
+  }
+}
 .side-menu {
-  width: 260px;
+  width: 100%;
   background-color: #f9f9f9;
   color: grey;
+}
+@media (min-width: 768px) {
+  .side-menu {
+    width: 260px;
+  }
+}
+.chat-container {
+  flex: 1;
+  padding: 1rem;
 }
 </style>

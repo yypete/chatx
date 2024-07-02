@@ -1,26 +1,32 @@
 <template>
   <div class="w-full h-screen flex justify-center items-center">
     <div
-      class="flex flex-col justify-center items-center chat-container relative h-full space-y-20"
+      class="flex flex-col justify-center items-center chat-container relative h-full space-y-24"
     >
       <!-- chat-with-robot -->
-      <div v-if="chatHistory">
-        <div v-for="(item, index) in chatHistory" :key="index">
+      <div v-if="chatHistory" class="chat-history-container">
+        <div
+          v-for="(item, index) in chatHistory"
+          :key="index"
+          class="chat-item"
+        >
           <div
-            class="absolute top-12 right-2 border border-b-2 border-gray-400 rounded-lg bg-red-100 p-2 flex text-lg font-bold"
+            class="border border-b-2 border-gray-400 rounded-lg bg-red-100 p-2 flex text-lg font-bold"
             v-if="item.role == 'user'"
+            :class="{ 'self-end': item.role == 'user' }"
           >
             <div class="pl-1"><i class="fi fi-sr-user-pen"></i></div>
-            :"{{ item.content }}"
+            {{ item.content }}
           </div>
           <div
-            class="absolute top-24 left-2 border border-b-2 border-gray-400 rounded-lg bg-blue-100 p-2 flex text-lg font-bold"
+            class="border border-b-2 border-gray-400 rounded-lg bg-blue-100 p-2 flex text-lg font-bold"
             v-if="item.role == 'bot'"
+            :class="{ 'self-start': item.role == 'bot' }"
           >
             <div class="pl-1">
               <img src="../assets/robot.png" class="translate-y-1 w-5" />
             </div>
-            :"{{ item.content }}"
+            {{ item.content }}
           </div>
         </div>
       </div>
@@ -47,7 +53,7 @@
       </div>
       <!-- chat-input -->
       <div
-        class="chat flex items-center bg-[#f4f4f4] border rounded-full shadow-md p-2 absolute bottom-3"
+        class="chat flex items-center bg-[#f4f4f4] border rounded-full shadow-md p-2 absolute bottom-6"
       >
         <button
           class="btn-left flex items-center justify-center h-full p-2 rounded-full text-gray-500"
@@ -78,19 +84,19 @@
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
             fill="none"
+            viewBox="0 0 32 32"
           >
             <path
               fill="currentColor"
               fill-rule="evenodd"
               d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z"
+              clip-rule="evenodd"
             ></path>
           </svg>
         </button>
       </div>
-    </div> 
+    </div>
   </div>
 </template>
 
@@ -160,10 +166,12 @@ export default defineComponent({
         chatHistory.value.pop();
       }
     };
+
     function talkAbout(message: string) {
       userMessage.value = message;
       sendMessageHandler();
     }
+
     return {
       chatHistory,
       userMessage,
@@ -178,20 +186,128 @@ export default defineComponent({
 <style scoped>
 .chat-container {
   width: 1000px;
+  max-width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
+
 .chat {
-  width: 760px;
-  height: 52px;
+  width: 100%;
+  max-width: 760px;
 }
+
 .usual-item {
-  border-width: 1px;
-  border-style: solid;
-  border-color: rgb(201, 195, 195);
+  border: 1px solid rgb(201, 195, 195);
   border-radius: 10%;
   width: 130px;
   height: 100px;
   padding: 10px;
-  flex-direction: column;
   font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.chat-history-container {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.chat-item {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-item .self-end {
+  margin-left: auto;
+}
+
+.img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.img svg {
+  fill: #6b7280;
+}
+
+.usual-talk {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chat {
+  position: relative;
+  margin-top: auto;
+}
+
+.chat input[type="text"] {
+  flex: 1;
+  margin: 0 10px;
+  padding: 10px;
+  border: none;
+  outline: none;
+  background-color: #f4f4f4;
+}
+
+.chat .btn-left,
+.chat .btn-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.chat .btn-left svg,
+.chat .btn-right svg {
+  width: 24px;
+  height: 24px;
+}
+
+.btn-right {
+  background-color: #16161a;
+  color: #ffffff;
+}
+
+.btn-right:hover {
+  background-color: #494848;
+}
+
+.btn-left {
+  background-color: #f4f4f4;
+}
+
+.btn-left:hover {
+  background-color: #e5e5e5;
+}
+
+@media screen and (max-width: 768px) {
+  .chat-container {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .chat {
+    width: 100%;
+  }
+
+  .usual-item {
+    width: 100px;
+    height: 80px;
+    padding: 8px;
+    font-size: 13px;
+  }
 }
 </style>

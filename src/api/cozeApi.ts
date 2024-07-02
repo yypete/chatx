@@ -3,8 +3,8 @@ import axios, { AxiosInstance } from "axios";
 // 定义 API 的基础 URL 和常量
 const API_URL = "https://api.coze.com/open_api/v2";
 const ACCESS_TOKEN =
-  "pat_BbbwKPRbbsMKUdkWloven6v6zToDkmayX30fDW9wCwjbOwu6SBdNgQ7u1AUGupjG";
-const BOT_ID = "7386497524418658309";
+  "pat_FVhQBDLveIPMhNpJjEwHgCnAAXu9bvVyWoKTkNm0rkcU2AbYSPyPK9O1QVWglclA";
+const BOT_ID = "7386943973929500688";
 
 // 创建一个带有默认配置的 Axios 实例
 const apiClient: AxiosInstance = axios.create({
@@ -21,9 +21,9 @@ interface ChatHistoryItem {
   role: string;
   content: string;
   content_type: string;
-  type?: string; // 可选字段，根据实际需求添加或删除
+  timestamp?: string;
+  type?: string;
 }
-
 // 发送消息并收到回复的函数
 export const sendMessage = async (
   conversationId: string,
