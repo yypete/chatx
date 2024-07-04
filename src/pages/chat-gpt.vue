@@ -41,16 +41,14 @@
           </a>
         </div>
         <!-- mid-history -->
-        <div
-          class="flex flex-col items-center cursor-pointer font-bold text-[14px]"
-          v-for="history in chatHistories"
-          :key="history.conversationId"
-          @click="loadConversation(history.conversationId)"
-        >
-          <div
-            class="py-2 w-full overflow-hidden text-ellipsis whitespace-nowrap flex justify-center hover:bg-gray-200 hover:rounded-lg text-[14px]"
-          >
-            {{ history.firstMessageContent }}
+        <div v-for="(group, index) in groupedChatHistories" :key="index">
+          <div v-if="group.label && group.histories.length > 0" class="text-left pl-6 font-bold py-2 text-sm">
+            {{ group.label }}
+          </div>
+          <div v-for="history in group.histories" :key="history.conversationId" class="flex flex-col items-center cursor-pointer font-bold text-[14px]" @click="loadConversation(history.conversationId)">
+            <div class="py-2 w-full overflow-hidden text-ellipsis whitespace-nowrap flex justify-center hover:bg-gray-200 hover:rounded-lg text-[14px]">
+              {{ history.firstMessageContent }}
+            </div>
           </div>
         </div>
       </div>
@@ -90,7 +88,9 @@ import NewChat from "../components/new-chat.vue";
 interface ConversationSummary {
   conversationId: string;
   firstMessageContent: string;
+  timestamp: string;
 }
+
 export default defineComponent({
   name: "ChatGpt",
   components: {
@@ -99,19 +99,18 @@ export default defineComponent({
   setup() {
     const chatHistories = ref<ConversationSummary[]>([]);
     const currentConversationId = ref<string>("123");
-    const allConversationIds = ref<string[]>(["123", "abc", "xyz"]); // 初始对话ID
-    const isSideMenuVisible = ref(true); // 添加状态控制侧边菜单显示
+    const allConversationIds = ref<string[]>(["123", "abc", "xyz"]);
+    const isSideMenuVisible = ref(true);
 
     function generateNewIdAndReload() {
-      // 获取新的聊天历史
       const newChatHistory = getChatHistory(currentConversationId.value);
-      console.log(newChatHistory);
-      console.log(currentConversationId.value);
-      // 判断是否存在且内容不为空
       const firstMessageContent =
         newChatHistory.length > 0 ? newChatHistory[0]?.content : "No messages";
+      const timestamp =
+        newChatHistory.length > 0
+          ? newChatHistory[0]?.timestamp || new Date().toISOString()
+          : new Date().toISOString();
 
-      // 添加新的聊天历史和ID到chatHistories和allConversationIds
       if (
         newChatHistory.length > 0 &&
         !chatHistories.value.some(
@@ -121,15 +120,15 @@ export default defineComponent({
         chatHistories.value.push({
           conversationId: currentConversationId.value,
           firstMessageContent: firstMessageContent,
+          timestamp: timestamp,
         });
-        allConversationIds.value.push(currentConversationId.value); // 添加新的ID到列表中
+        allConversationIds.value.push(currentConversationId.value);
       }
-      // 生成新的随机ID
+
       let randomString =
         Math.random().toString(36).substring(2, 15) +
         Math.random().toString(36).substring(2, 15);
 
-      // 确保生成的随机ID不在已有的聊天历史中
       while (
         chatHistories.value.some(
           (history) => history.conversationId === randomString
@@ -139,17 +138,54 @@ export default defineComponent({
           Math.random().toString(36).substring(2, 15) +
           Math.random().toString(36).substring(2, 15);
       }
-      // 更新当前会话ID
+
       currentConversationId.value = randomString;
     }
 
     function loadConversation(conversationId: string) {
       currentConversationId.value = conversationId;
-      console.log(conversationId);
     }
 
     function toggleSideMenu() {
       isSideMenuVisible.value = !isSideMenuVisible.value;
+    }
+
+    function groupChatHistories() {
+      const grouped = {
+        today: [] as ConversationSummary[],
+        yesterday: [] as ConversationSummary[],
+        lastSevenDays: [] as ConversationSummary[],
+        earlier: [] as ConversationSummary[],
+      };
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+
+      chatHistories.value.forEach((history) => {
+        const timestamp = new Date(history.timestamp);
+        if (timestamp >= today) {
+          grouped.today.push(history);
+        } else if (timestamp >= yesterday) {
+          grouped.yesterday.push(history);
+        } else if (timestamp >= sevenDaysAgo) {
+          grouped.lastSevenDays.push(history);
+        } else {
+          grouped.earlier.push(history);
+        }
+      });
+
+      const groupedHistories = [
+        { label: "今天", histories: grouped.today },
+        { label: "昨天", histories: grouped.yesterday },
+        { label: "前七天", histories: grouped.lastSevenDays },
+        { label: null, histories: grouped.earlier },
+      ];
+
+      return groupedHistories.filter((group) => group.histories.length > 0);
     }
 
     onMounted(() => {
@@ -159,17 +195,23 @@ export default defineComponent({
           chatHistories.value.push({
             conversationId: id,
             firstMessageContent: chatHistory[0].content,
+            timestamp: chatHistory[0].timestamp || new Date().toISOString(),
           });
         }
       });
+      groupedChatHistories.value = groupChatHistories(); // Update grouped chat histories after mounting
     });
+
+    const groupedChatHistories = ref(groupChatHistories());
+
     return {
       chatHistories,
       currentConversationId,
       generateNewIdAndReload,
       loadConversation,
-      isSideMenuVisible, // 添加到返回对象中
-      toggleSideMenu, // 添加到返回对象中
+      isSideMenuVisible,
+      toggleSideMenu,
+      groupedChatHistories,
     };
   },
 });

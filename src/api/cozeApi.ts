@@ -4,7 +4,7 @@ import axios, { AxiosInstance } from "axios";
 const API_URL = "https://api.coze.com/open_api/v2";
 const ACCESS_TOKEN =
   "pat_FVhQBDLveIPMhNpJjEwHgCnAAXu9bvVyWoKTkNm0rkcU2AbYSPyPK9O1QVWglclA";
-const BOT_ID = "7386943973929500688";
+const BOT_ID = "7387612698340917249";
 
 // 创建一个带有默认配置的 Axios 实例
 const apiClient: AxiosInstance = axios.create({
