@@ -45,7 +45,7 @@
       <!-- usual-talk -->
       <div
         v-if="chatHistory.length === 0"
-        class="usual-talk flex space-x-5 lg:-translate-y-96 md:-translate-y-20 sm:-translate-y-10"
+        class="usual-talk flex space-x-5 lg:-translate-y-96 md:-translate-y-20 sm:-translate-y-9 ssm:-translate-y-8"
       >
         <button
           v-for="(item, index) in usualTalk"
